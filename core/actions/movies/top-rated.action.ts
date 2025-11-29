@@ -5,7 +5,7 @@ import { MovieMapper } from "@/infraestructure/mappers/movie.mapper";
 export const topRatedMovies = async () : Promise<Movie[]> =>
 {
     try{
-        const { data } = await moviesApi.get<MovieDBMoviesResponse>('/top-rated');
+        const { data } = await moviesApi.get<MovieDBMoviesResponse>('/movie/top_rated');
         
         const movies = data.results.map(movieDbMovie => MovieMapper.fromtheMovieDbToMovie(movieDbMovie))
         

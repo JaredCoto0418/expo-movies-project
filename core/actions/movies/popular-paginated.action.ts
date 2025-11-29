@@ -12,7 +12,7 @@ export const popularMoviesPaginated = async (
   page: number = 1
 ): Promise<PaginatedMoviesResponse> => {
   try {
-    const { data } = await moviesApi.get<MovieDBMoviesResponse>("/popular", {
+    const { data } = await moviesApi.get<MovieDBMoviesResponse>("/movie/popular", {
       params: {
         page,
       },

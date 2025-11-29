@@ -2,7 +2,7 @@ import { getMovieTrailer, movieDetailsAction } from "@/core/actions/movies";
 import * as Linking from 'expo-linking';
 import { useQuery } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const MovieDetailsScreen = () => {
+const MovieDetailsContent = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const safeArea = useSafeAreaInsets();
 
@@ -29,29 +29,35 @@ const MovieDetailsScreen = () => {
     enabled: !!id,
   });
 
-    if (movieQuery.isLoading || trailerQuery.isLoading) {
+  useEffect(() => {
+    if (movieQuery.isError) {
+      console.error('movieQuery error:', movieQuery.error);
+    }
+  }, [movieQuery.isError, movieQuery.error]);
+
+  useEffect(() => {
+    if (trailerQuery.isError) {
+      console.error('trailerQuery error:', trailerQuery.error);
+    }
+  }, [trailerQuery.isError, trailerQuery.error]);
+
+  if (movieQuery.isLoading || trailerQuery.isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator color={"purple"} size="large" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator color="purple" size="large" />
       </View>
     );
   }
 
   if (movieQuery.isError || !movieQuery.data) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-lg text-red-500">Error loading movie details</Text>
-        <Pressable
-          onPress={() => router.back()}
-          className="mt-4 rounded-lg bg-purple-600 px-6 py-3"
-        >
-          <Text className="text-white">Go Back</Text>
-        </Pressable>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Error loading movie details.</Text>
       </View>
     );
   }
 
-    const movie = movieQuery.data;
+  const movie = movieQuery.data;
   const trailer = trailerQuery.data;
 
   return (
@@ -59,14 +65,12 @@ const MovieDetailsScreen = () => {
       className="flex-1 bg-white"
       style={{ paddingTop: safeArea.top }}
     >
-      {/* Header with back button */}
       <View className="flex-row items-center justify-between px-4 py-4">
         <Pressable onPress={() => router.back()}>
           <Text className="text-2xl font-bold text-purple-600">← Back</Text>
         </Pressable>
       </View>
 
-      {/* Movie Backdrop */}
       <View className="h-64 w-full overflow-hidden">
         <Image
           source={{ uri: movie.backdrop }}
@@ -75,14 +79,11 @@ const MovieDetailsScreen = () => {
         />
       </View>
 
-      {/* Movie Info */}
       <View className="px-4 py-6">
-        {/* Title */}
         <Text className="mb-2 text-3xl font-bold text-gray-900">
           {movie.title}
         </Text>
 
-        {/* Release Date and Rating */}
         <View className="mb-4 flex-row items-center justify-between">
           <Text className="text-base text-gray-600">
             {new Date(movie.release).getFullYear()}
@@ -104,10 +105,8 @@ const MovieDetailsScreen = () => {
           </Pressable>
         )}
 
-        {/* Divider */}
         <View className="mb-4 h-px bg-gray-200" />
 
-        {/* Description */}
         <Text className="mb-2 text-lg font-semibold text-gray-900">
           Synopsis
         </Text>
@@ -115,7 +114,6 @@ const MovieDetailsScreen = () => {
           {movie.description}
         </Text>
 
-        {/* Poster */}
         <View className="mt-8 items-center">
           <Image
             source={{ uri: movie.poster }}
@@ -125,7 +123,6 @@ const MovieDetailsScreen = () => {
           />
         </View>
 
-        {/* Additional Info */}
         <View className="mt-8 rounded-lg bg-gray-100 p-4">
           <Text className="mb-2 text-base font-semibold text-gray-900">
             Release Date
@@ -141,6 +138,13 @@ const MovieDetailsScreen = () => {
       </View>
     </ScrollView>
   );
+};
+
+const MovieDetailsScreen = () => {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  // This component now only exists to provide the ID to the content component,
+  // ensuring hooks are not called conditionally.
+  return <MovieDetailsContent />;
 };
 
 export default MovieDetailsScreen;
